@@ -11,7 +11,7 @@ export interface ServerRespond {
 
 class DataStreamer {
   static API_URL: string = 'http://localhost:8080/query?id=1';
-
+  static HISTORICAL_DATA_URL: string = 'http://localhost:8080/query?id=1';
 
   static getData(callback: (data: ServerRespond[]) => void): void {
     const request = new XMLHttpRequest();
@@ -28,7 +28,19 @@ class DataStreamer {
     request.send();
   }
 
+  static getHistoricalData(callback: (data: ServerRespond[]) => void): void {
+    const request = new XMLHttpRequest();
+    request.open('GET', DataStreamer.HISTORICAL_DATA_URL, true);
 
+    request.onload = () => {
+      if (request.status === 200) {
+        callback(JSON.parse(request.responseText));
+      } else {
+        alert('Request for historical data failed');
+      }
+    };
+    request.send();
+  }
 
 }
 
