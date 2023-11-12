@@ -15,6 +15,8 @@ interface IState {
 interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
+
+// Component renders the data visualization
 class Graph extends Component<IProps, IState> {
   table: Table | undefined;
 
@@ -24,7 +26,6 @@ class Graph extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    // Get element from the DOM.
     const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
@@ -37,11 +38,11 @@ class Graph extends Component<IProps, IState> {
       trigger_alert: 'float',
     };
 
-    if (window.perspective && window.perspective.worker()) {
+// Initialize the perspective table if the perspective worker is available
+if (window.perspective && window.perspective.worker()) {
       this.table = window.perspective.worker().table(schema);
     }
     if (this.table) {
-      // Load the `table` in the `<perspective-viewer>` DOM reference.
       elem.load(this.table);
       elem.setAttribute('view', 'y_line');
       elem.setAttribute('row-pivots', '["timestamp"]');
@@ -56,14 +57,16 @@ class Graph extends Component<IProps, IState> {
       }));
     }
 
-    //Fetch historical data and calculate bounds
+    // Fetch historical data and calculates bounds for the graph 
     DataStreamer.getHistoricalData((historicalData) => {
       const bounds = DataManipulator.calculateBounds(historicalData);
       this.setState({ bounds });
     });
   }
 
+
   componentDidUpdate() {
+    // Updating the perspective table with new data when component updates
     if (this.table && this.state.bounds) {
       this.table.update([
         DataManipulator.generateRow(this.props.data, this.state.bounds),

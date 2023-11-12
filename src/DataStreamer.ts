@@ -9,6 +9,7 @@ export interface ServerRespond {
   timestamp: Date,
 }
 
+// Handles API requests for real-time and historical data
 class DataStreamer {
   static API_URL: string = 'http://localhost:8080/query?id=1';
   static HISTORICAL_DATA_URL: string = 'http://localhost:8080/query?id=1';
@@ -28,6 +29,7 @@ class DataStreamer {
     request.send();
   }
 
+  // Method to fetch historical data from the server
   static getHistoricalData(callback: (data: ServerRespond[]) => void): void {
     const request = new XMLHttpRequest();
     request.open('GET', DataStreamer.HISTORICAL_DATA_URL, true);

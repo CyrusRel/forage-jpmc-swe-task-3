@@ -1,6 +1,6 @@
 import { ServerRespond } from './DataStreamer';
+// Script purpose process raw data from the server before the Graph component renders it
 
-//Process raw data from the server before the Graph component renders it
 
 export interface Row {
   price_abc: number,
@@ -13,31 +13,31 @@ export interface Row {
 }
 
 export class DataManipulator {
-
-  static calculateBounds(historicalData: ServerRespond[]): {upper: number, lower: number} {
-    let totalRatio = 0;
-    let count = 0;
-
-    historicalData.forEach(data => {
-      const priceABC = (data.top_ask.price + data.top_bid.price) / 2;
-      const priceDEF = (data.top_ask.price + data.top_ask.price) / 2;
-      const ratio = priceABC / priceDEF;
-      totalRatio += ratio;
-      count++;
-    });
-    const averageRatio = totalRatio / count;
-    const upperBound = averageRatio * 1.05;
-    const lowerBound = averageRatio * 0.95;
-
-    return { upper: upperBound, lower: lowerBound};
+  private static calculateAveragePrice(data: ServerRespond): number {
+    return (data.top_ask.price + data.top_bid.price) / 2;
   }
 
+  //Calculates the lower and higher bounds using historical data
+  static calculateBounds(historicalData: ServerRespond[]): { upper: number, lower: number} {
+    if (historicalData.length < 2) {
+      return { upper: 1.05, lower: 0.95 };
+    }   
+
+   const startPrice = DataManipulator.calculateAveragePrice(historicalData[0]);
+   const endPrice = DataManipulator.calculateAveragePrice(historicalData[historicalData.length - 1]);
+   const ratio = startPrice / endPrice;
+
+   const upperBound = ratio * 1.05;
+   const lowerBound = ratio * 0.95;
+   return { upper: upperBound, lower: lowerBound};
+  }
+
+// Generates a Row object from server response and calculated bounds
   static generateRow(serverRespond: ServerRespond[], bounds: { upper: number, lower: number }): Row {
-    const priceABC = (serverRespond[0].top_ask.price + serverRespond[0].top_bid.price) /2;
-    const priceDEF = (serverRespond[1].top_ask.price + serverRespond[1].top_bid.price) /2;
+    const priceABC = DataManipulator.calculateAveragePrice(serverRespond[0]);
+    const priceDEF = DataManipulator.calculateAveragePrice(serverRespond[1]);
     const ratio = priceABC / priceDEF;
   
-
     return {
       price_abc: priceABC,
       price_def: priceDEF,
